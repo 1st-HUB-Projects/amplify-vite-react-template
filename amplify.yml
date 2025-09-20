@@ -2,14 +2,18 @@
 version: 1
 backend:
   phases:
+    # We add an 'env' phase to set environment variables for the build server.
+    env:
+      variables:
+        # This environment variable gives the pipeline permission to execute
+        # destructive changes, like deleting the old 'Todo' table.
+        AMPLIFY_DANGER_ALLOW_DESTRUCTIVE_SCHEMA_CHANGES: "true"
     build:
       commands:
-        # We use 'npm ci' for faster, more reliable installs in CI/CD
         - npm ci
-        # The key change is adding the '--allow-destructive-changes' flag.
-        # This tells Amplify that we approve the deletion of the old 'Todo'
-        # table and the creation of the new 'Cloud Kitchen' tables.
-        - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID --allow-destructive-changes
+        # The command is now clean, without the incorrect flag. The environment
+        # variable set above will be used by this command.
+        - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
 frontend:
   phases:
     preBuild:
