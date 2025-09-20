@@ -1,19 +1,29 @@
+# This file configures the build and deployment process for Amplify Hosting.
 version: 1
 backend:
   phases:
+    # We add an 'env' phase to set environment variables for the build server.
+    env:
+      variables:
+        # This environment variable gives the pipeline permission to execute
+        # destructive changes, like deleting the old 'Todo' table.
+        AMPLIFY_DANGER_ALLOW_DESTRUCTIVE_SCHEMA_CHANGES: "true"
     build:
       commands:
-        - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID --yes  # Deploys Gen 2 backend
+        - npm ci
+        # The command is now clean, without the incorrect flag. The environment
+        # variable set above will be used by this command.
+        - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
 frontend:
   phases:
     preBuild:
       commands:
         - npm ci
-        - amplify codegen types --yes  # Regenerates API.ts, graphql/ based on new schema
     build:
       commands:
         - npm run build
   artifacts:
+    # This tells Amplify where to find the built frontend assets (for Vite)
     baseDirectory: dist
     files:
       - '**/*'
